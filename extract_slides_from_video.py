@@ -51,7 +51,7 @@ def plot_diff(diffs, pngname, verbose=True):
   if verbose:
     print('wrote diff plot to {}'.format(pngname))
 
-def extract_slides(video_path):
+def extract_slides(video_path, pdfname):
   """
   check frames at rate of 1 frame per second, and if diff between previous and
   current frame is greater than 0, extract that frame as slide, merge all
@@ -65,17 +65,17 @@ def extract_slides(video_path):
   vidcap = cv2.VideoCapture(video_path)
   nframes = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
   fps = vidcap.get(cv2.CAP_PROP_FPS)
-  idxs = list(range(0,nframes,int(fps)))
+  idxs = list(range(0,nframes,int(fps))) # get 1 image per second
   nidxs = len(idxs)
 
-  # readthe  first image
-  success,img1 = vidcap.read()
+  # read the first image
+  success, img1 = vidcap.read()
   #showimg(img1)
   #height, width = img1.shape[:2]
 
   # write the first slide
   nslides = 0 # count #slides extracted
-  print('writing slide {}(frame {}) ...'.format(nslides, 0))
+  print('writing slide {} (frame {}) ...'.format(nslides, 0))
   output_path = os.path.join(output_dir, pattern.format(nslides))
   cv2.imwrite(output_path, img1);
 
@@ -103,7 +103,7 @@ def extract_slides(video_path):
       nslides += 1
       print('writing slide {} (frame {}) ...'.format(nslides, idxs[i]))
       output_path = os.path.join(output_dir, pattern.format(nslides))
-      cv2.imwrite(output_path, img2)
+      cv2.imwrite(output_path, img2);
 
     # post-processing
     diffs.append(diff)
@@ -119,8 +119,6 @@ def extract_slides(video_path):
 
   # merge slide images into pdf file
   imgs = glob.glob(os.path.join(output_dir, 'slide*.jpg'))
-  pdfname = os.path.join(str(Path(output_dir).parent),
-    '{}.pdf'.format(os.path.basename(output_dir)))
   imgs2pdf(imgs, pdfname)
 
 def parse_args():
@@ -138,8 +136,8 @@ def main():
 
   # setup dir and file path (paramenters need to be specified)
   video_dir = args.video_dir
+  #video_dir = r'C:\Users\zge\Dropbox\Video\Courses\edX_IBM_DeepLearning2'
   print('processing videos in video dir: {}'.format(video_dir))
-  #video_dir = r'C:\Users\zge\Dropbox\Video\Courses\edX_IBM_DeepLearning1'
   video_paths = glob.glob(os.path.join(video_dir, '*.mp4'))
   nvideos = len(video_paths)
 
@@ -159,7 +157,7 @@ def main():
 
     # extract slides if the target pdf file does not exist
     if not os.path.isfile(pdfname):
-      extract_slides(video_path)
+      extract_slides(video_path, pdfname)
     else:
       print('{} already exist, skip!'.format(pdfname))
 
